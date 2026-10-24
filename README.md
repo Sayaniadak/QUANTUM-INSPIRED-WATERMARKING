@@ -1,4 +1,4 @@
-# QUANTUM-INSPIRED-WATERMARKING
+# Quantum-Inspired-watermarking 
 # Quantum-Chaotic & Deep Learning Hybrid Image Watermarking (CCNOT-Watermark)
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
@@ -41,48 +41,48 @@ The pipeline consists of two symmetric flows: **Embedding** and **Extraction/Ver
 
 ```mermaid
 flowchart TD
-    subgraph Watermark Pipeline
-        W[Binary Watermark 64x64 / 128x128] --> LSCM[2D-LSCM Chaotic Scrambling\nPermutation + XOR Substitution]
-        LSCM --> W_Scrambled[Scrambled Watermark]
-        W_Scrambled --> CNN[ResNet-18 Backbone]
-        CNN --> SE[SE Attention Module]
-        SE --> COMP[Dense Compression -> 8 Values]
-        COMP --> ANGLES[Angle Encoding 0..pi]
-        ANGLES --> HASH[Compute 32-bit SHA-256 Hash of Scrambled Bits]
-        HASH --> CCNOT[Reversible CCNOT / Toffoli Mixing]
-        CCNOT --> DNA[DNA Nucleotide Encoding: A, C, G, T]
-        DNA --> QEC[3-Bit Repetition Code QEC Backup]
-        QEC --> PAYLOAD[Encoded Robust Payload: 288 bits]
+    subgraph WP["Watermark Pipeline"]
+        W["Binary Watermark<br/>(64x64 / 128x128)"] --> LSCM["2D-LSCM Chaotic Scrambling<br/>(Permutation + XOR Substitution)"]
+        LSCM --> W_Scrambled["Scrambled Watermark"]
+        W_Scrambled --> CNN["ResNet-18 Backbone"]
+        CNN --> SE["SE Attention Module"]
+        SE --> COMP["Dense Compression (8 Values)"]
+        COMP --> ANGLES["Angle Encoding (0 to pi)"]
+        ANGLES --> HASH["32-bit SHA-256 Hash Calculation"]
+        HASH --> CCNOT["Reversible CCNOT / Toffoli Mixing"]
+        CCNOT --> DNA["DNA Nucleotide Encoding (A, C, G, T)"]
+        DNA --> QEC["3-Bit Repetition Code QEC"]
+        QEC --> PAYLOAD["Encoded Robust Payload (288 bits)"]
     end
 
-    subgraph Carrier Preparation & Embedding
-        C[512x512 Grayscale Carrier Image] --> RS[10x10 Region Scorer\nVariance + Canny Edge Strength]
-        RS --> STEP[Adaptive Block Step Sizes\nSmooth: 0.75x | Mid: 1.0x | Textured: 1.25x]
-        PAYLOAD --> STREAM[Multiplex Bitstream:\nPayload + Scrambled Watermark]
+    subgraph CPE["Carrier Preparation & Embedding"]
+        C["512x512 Grayscale Carrier Image"] --> RS["10x10 Region Scorer<br/>(Variance + Canny Edge Strength)"]
+        RS --> STEP["Adaptive Block Step Sizes<br/>(Smooth: 0.75x, Mid: 1.0x, Textured: 1.25x)"]
+        PAYLOAD --> STREAM["Multiplex Bitstream<br/>(Payload + Scrambled Watermark)"]
         W_Scrambled --> STREAM
-        C --> DCT[8x8 Block DCT Transformation]
-        STREAM --> QIM[Quantization Index Modulation QIM\nIterative Multi-Pass Re-quantization]
+        C --> DCT["8x8 Block DCT Transformation"]
+        STREAM --> QIM["Quantization Index Modulation (QIM)<br/>(Iterative Multi-Pass Re-quantization)"]
         STEP --> QIM
         DCT --> QIM
-        QIM --> IDCT[Inverse 8x8 Block DCT]
-        IDCT --> WM_IMG[Watermarked Carrier Image]
+        QIM --> IDCT["Inverse 8x8 Block DCT"]
+        IDCT --> WM_IMG["Watermarked Carrier Image"]
     end
 
-    subgraph Extraction & Dual Verification
-        WM_IMG --> ATK[Attacks:\nJPEG, Gaussian, Salt-and-Pepper, Blur]
-        ATK --> RX[Received Watermarked Image]
-        RX --> EX_QIM[DCT-QIM Soft-Decision Majority Voting]
-        EX_QIM --> SPLIT{De-multiplex Stream}
-        SPLIT -->|Payload Bits| QEC_DEC[Majority-Vote QEC + Reverse CCNOT]
-        SPLIT -->|Watermark Bits| DESCRAMBLE[2D-LSCM Inverse Descramble with Key]
-        QEC_DEC --> DEC_HASH[Decoded 32-bit Hash]
-        QEC_DEC --> DEC_SIG[Decoded CNN Angles]
-        DESCRAMBLE --> REC_WM[Recovered Watermark Image]
-        REC_WM --> TEST1[Layer 1: SHA-256 Exact Bit Hash Test]
+    subgraph EDV["Extraction & Dual Verification"]
+        WM_IMG --> ATK["Attacks<br/>(JPEG, Gaussian, Salt-and-Pepper, Blur)"]
+        ATK --> RX["Received Watermarked Image"]
+        RX --> EX_QIM["DCT-QIM Soft-Decision Majority Voting"]
+        EX_QIM --> SPLIT{"De-multiplex Stream"}
+        SPLIT -->|Payload Bits| QEC_DEC["Majority-Vote QEC + Reverse CCNOT"]
+        SPLIT -->|Watermark Bits| DESCRAMBLE["2D-LSCM Inverse Descramble with Key"]
+        QEC_DEC --> DEC_HASH["Decoded 32-bit Hash"]
+        QEC_DEC --> DEC_SIG["Decoded CNN Angles"]
+        DESCRAMBLE --> REC_WM["Recovered Watermark Image"]
+        REC_WM --> TEST1["Layer 1: SHA-256 Exact Bit Hash Test"]
         DEC_HASH --> TEST1
-        REC_WM --> TEST2[Layer 2: CNN Signature Consistency Test]
+        REC_WM --> TEST2["Layer 2: CNN Signature Consistency Test"]
         DEC_SIG --> TEST2
-        TEST1 --> VERDICT[Integrity Verdict: Intact vs Tampered]
+        TEST1 --> VERDICT["Integrity Verdict: Intact vs Tampered"]
         TEST2 --> VERDICT
     end
 ```
